@@ -53,6 +53,7 @@ function Login() {
         url: LOGIN_URL,
         headers: {
           "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         data: {
           email: formData.get("email"),

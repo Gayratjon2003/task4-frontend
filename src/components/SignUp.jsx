@@ -61,6 +61,7 @@ export default function SignUp() {
             url: REGISTER_URL,
             headers: {
               "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
             },
             data: {
               name: formData.get("name"),
