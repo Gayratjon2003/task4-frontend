@@ -1,16 +1,24 @@
-import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
+import React from "react";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import {
+  createTheme,
+  ThemeProvider,
+  Avatar,
+  Button,
+  CssBaseline,
+  TextField,
+  Link,
+  Grid,
+  Box,
+  Typography,
+  Container,
+} from "@mui/material";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { LOGIN_URL } from "../constant";
+import { useDispatch } from "react-redux";
+import { snackbarStart } from "../store/SnackbarSlice";
+import { start, done } from "../store/loaderSlice";
 
 function Copyright(props) {
   return (
@@ -33,16 +41,44 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 function Login() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    dispatch(start());
+    const formData = new FormData(event.currentTarget);
+    try {
+      const { data } = await axios({
+        method: "post",
+        url: LOGIN_URL,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: {
+          email: formData.get("email"),
+          password: formData.get("password"),
+        },
+      });
+      dispatch(
+        snackbarStart({
+          text: data?.text,
+          severity: "success",
+        })
+      );
+    dispatch(done());
+    localStorage.setItem("token", JSON.stringify(data?.token));
+    navigate("/");
+    } catch (err) {
+      console.log(err);
+      dispatch(
+        snackbarStart({
+          text: err?.response?.data || "Something went wrong!",
+          severity: "error",
+        })
+      );
+    dispatch(done());
+    }
   };
-
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -97,7 +133,11 @@ function Login() {
             </Button>
             <Grid container>
               <Grid item>
-                <Link variant="body2" onClick={()=> navigate("/signup")} className="cursor-pointer">
+                <Link
+                  variant="body2"
+                  onClick={() => navigate("/signup")}
+                  className="cursor-pointer"
+                >
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

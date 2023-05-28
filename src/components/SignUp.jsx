@@ -1,19 +1,24 @@
-import React, { useState } from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
+import React from "react";
+import {
+  Avatar,
+  Button,
+  CssBaseline,
+  TextField,
+  Link,
+  Grid,
+  Box,
+  Typography,
+  Container,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-import { SnackBar } from "./index";
+import { REGISTER_URL } from "../constant";
+import axios from "axios";
+import { snackbarStart } from "../store/SnackbarSlice";
+import { useDispatch } from "react-redux";
+import { done, start } from "../store/loaderSlice";
+
 function Copyright(props) {
   return (
     <Typography
@@ -35,24 +40,72 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignUp() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password1, setPassword1] = useState("");
-  const [password2, setPassword2] = useState("");
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const handleSubmit = (event) => {
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // console.log({
-    //   email: data.get("email"),
-    //   password: data.get("password"),
-    // });
-    setName(data.get("name"));
-    setEmail(data.get("email"));
-    setPassword1(data.get("password1"));
-    setPassword2(data.get("password2"));
+    dispatch(start());
+    const formData = new FormData(event.currentTarget);
+
+    if (
+      formData.get("name").length !== 0 &&
+      formData.get("email").length !== 0 &&
+      formData.get("password1").length !== 0 &&
+      formData.get("password2").length !== 0
+    ) {
+      if (formData.get("password1") === formData.get("password2")) {
+        try {
+          const { data } = await axios({
+            method: "post",
+            url: REGISTER_URL,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            data: {
+              name: formData.get("name"),
+              email: formData.get("email"),
+              password: formData.get("password1"),
+              isAdmin: false,
+              status: "Active",
+            },
+          });
+          localStorage.setItem("token", JSON.stringify(data?.token));
+          dispatch(
+            snackbarStart({
+              text: "Account created successfully",
+              severity: "success",
+            })
+          );
+          dispatch(done());
+          navigate("/");
+        } catch (err) {
+          console.log(err);
+          dispatch(
+            snackbarStart({
+              text: err?.response?.data || "Something went wrong!",
+              severity: "error",
+            })
+          );
+          dispatch(done());
+        }
+      } else {
+        dispatch(
+          snackbarStart({
+            text: "Passwords aren't same",
+            severity: "error",
+          })
+        );
+      }
+    } else {
+      dispatch(
+        snackbarStart({
+          text: "Fields are not filled",
+          severity: "error",
+        })
+      );
+    }
   };
-  console.log(`${name} : ${email}: ${password1} : ${password2}`);
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -88,7 +141,6 @@ export default function SignUp() {
                   label="Your name"
                   autoFocus
                   error={false}
-                  helperText={name !== "" && "Name is required"}
                 />
               </Grid>
               <Grid item xs={12}>

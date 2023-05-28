@@ -16,8 +16,6 @@ export const SnackBarSlice = createSlice({
     },
     snackbarDone: (state) => {
       state.status = false;
-      state.text = "";
-      state.severity = "";
     },
   },
 });
