@@ -96,6 +96,7 @@ export default function SignUp() {
             severity: "error",
           })
         );
+        dispatch(done());
       }
     } else {
       dispatch(
@@ -104,6 +105,7 @@ export default function SignUp() {
           severity: "error",
         })
       );
+      dispatch(done());
     }
   };
   return (
