@@ -72,6 +72,7 @@ export default function SignUp() {
             },
           });
           localStorage.setItem("token", JSON.stringify(data?.token));
+          localStorage.setItem("id", JSON.stringify(data?._id));
           dispatch(
             snackbarStart({
               text: "Account created successfully",

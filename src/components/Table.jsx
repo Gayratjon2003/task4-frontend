@@ -6,12 +6,14 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { modalStart, setModalFunc } from "../store/modalSlice";
 import { useDispatch } from "react-redux";
 import axios from "axios";
-import { REGISTER_URL } from "../constant";
+import { CHECKLOGGED, REGISTER_URL } from "../constant";
 import { snackbarStart } from "../store/SnackbarSlice";
 import { done, start } from "../store/loaderSlice";
+import { useNavigate } from "react-router-dom";
 
 export default function DataTable() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const deleteUsers = () => {
@@ -35,6 +37,7 @@ export default function DataTable() {
           })
         );
         getRequest();
+        checkLogged();
       } catch (err) {
         dispatch(done());
         dispatch(
@@ -82,6 +85,7 @@ export default function DataTable() {
           })
         );
         getRequest();
+        checkLogged();
       } catch (err) {
         dispatch(done());
         dispatch(
@@ -215,7 +219,42 @@ export default function DataTable() {
 
     return formattedDate;
   }
-
+  const checkLogged = async () => {
+    dispatch(start());
+    const _id = localStorage.getItem("id");
+    try {
+      const { status } = await axios({
+        method: "delete",
+        url: `${CHECKLOGGED}/${_id}`,
+        headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": JSON.parse(localStorage.getItem("token")),
+        },
+        data: {},
+      });
+      dispatch(done());
+      dispatch(
+        snackbarStart({
+          text: "The selected users have been deleted",
+          severity: "success",
+        })
+      );
+      if (status !== 200) {
+        navigate("/login");
+      }
+    } catch (err) {
+      dispatch(done());
+      dispatch(
+        snackbarStart({
+          text: "You are not logged in!",
+          severity: "error",
+        })
+      );
+      navigate("/login");
+      dispatch(done());
+      console.log(err);
+    }
+  };
   const getRequest = async () => {
     try {
       const { data } = await axios({

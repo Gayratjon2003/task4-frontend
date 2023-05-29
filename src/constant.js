@@ -3,3 +3,4 @@
 export const SERVER_URL = "https://adminpaneluz.cyclic.app/";
 export const LOGIN_URL = `${SERVER_URL}api/auth`;
 export const REGISTER_URL = `${SERVER_URL}api/users`;
+export const CHECKLOGGED = `${SERVER_URL}api/users/me`;

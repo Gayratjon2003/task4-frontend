@@ -68,6 +68,7 @@ function Login() {
       );
     dispatch(done());
     localStorage.setItem("token", JSON.stringify(data?.token));
+    localStorage.setItem("id", JSON.stringify(data?._id));
     navigate("/");
     } catch (err) {
       console.log(err);
